@@ -76,6 +76,9 @@ public class Universe implements Serializable {
         return result;
     }
 
+    /**
+     * Этот метод нужен для заполнения поля случайным расселением
+     */
     public void initializeRandom() {
         Random random = new Random();
         for (int i = 0; i < matrix.length; i++) {
