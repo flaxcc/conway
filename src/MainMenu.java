@@ -1,0 +1,86 @@
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+
+public class MainMenu {
+    private JButton startButton;
+    private JButton exitButton;
+    private JTextField rowField;
+    private JTextField columnField;
+    private JPanel rootPanel;
+    private JComboBox comboBox;
+    private JButton choiseButton;
+    private String chosenConfiguration;
+    private Universe universe;
+
+    public MainMenu() {
+        rowField.setText("100");
+        columnField.setText("100");
+        var file = new File("src/resources");
+        for (String item : file.list()) {
+            comboBox.addItem(item);
+        }
+        comboBox.addItem("случайное расселение");
+        startButton.addActionListener(e -> {
+            if (universe == null) {
+                var s1 = rowField.getText();
+                int x = Integer.parseInt(s1);
+                var s2 = columnField.getText();
+                int y = Integer.parseInt(s2);
+                universe = new Universe(y, x);
+                chosenConfiguration = (String) comboBox.getSelectedItem();
+                if (chosenConfiguration.equals("случайное расселение"))
+                {
+                    universe.initializeRandom();
+                }
+                else {
+                    try {
+                        String filename = "src/resources/" + chosenConfiguration;
+                        universe.readFromFile(filename);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            new Thread(() -> universe.start()).start();
+        });
+        exitButton.addActionListener(e -> System.exit(0));
+        comboBox.addActionListener(e -> chosenConfiguration = (String) comboBox.getSelectedItem());
+        choiseButton.addActionListener(e -> {
+            if (chosenConfiguration == null) {
+                chosenConfiguration = (String) comboBox.getSelectedItem();
+            }
+            var s1 = rowField.getText();
+            int x = Integer.parseInt(s1);
+            var s2 = columnField.getText();
+            int y = Integer.parseInt(s2);
+            universe = new Universe(y, x);
+            if (chosenConfiguration.equals("случайное расселение"))
+            {
+                universe.initializeRandom();
+            }
+            else {
+                try {
+                    String filename = "src/resources/" + chosenConfiguration;
+                    universe.readFromFile(filename);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            new Thread(() -> universe.show()).start();
+
+        });
+
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("MainMenu");
+        frame.setContentPane(new MainMenu().rootPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 200);
+        frame.setLocation(966, 0);
+        frame.setVisible(true);
+    }
+
+
+}
