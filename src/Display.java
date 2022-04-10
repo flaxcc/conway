@@ -2,6 +2,7 @@ import utils.StdDraw;
 
 import java.awt.*;
 import java.io.Serializable;
+import java.util.concurrent.*;
 
 public class Display implements Serializable {
     private final int CANVAS_WIDTH = 966;
@@ -9,6 +10,7 @@ public class Display implements Serializable {
     private int xScale;
     private int yScale;
     private Universe universe;
+    private BlockingQueue<int[][]> framesQueue = new LinkedBlockingQueue<>();
 
     public Display(Universe universe) {
         this.universe = universe;
@@ -23,12 +25,12 @@ public class Display implements Serializable {
 
     }
 
-    public void show() {
+    public void show(int[][] matrix) {
+        long start = System.currentTimeMillis();
         StdDraw.clear();
-        var matrix = universe.getMatrix();
         for (int i = 1; i <= matrix.length; i++) {
             for (int j = 1; j <= matrix[0].length; j++) {
-                if (matrix[i-1][j-1] == 1) {
+                if (matrix[i - 1][j - 1] == 1) {
                     StdDraw.point(i * xScale, j * yScale);
                 }
 
@@ -36,7 +38,26 @@ public class Display implements Serializable {
 
         }
         StdDraw.show();
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);
+    }
 
+    public void showForever() {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        executor.execute(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(1000/25);
+                    int[][] nextFrame = framesQueue.poll();
+                    CompletableFuture.runAsync(() -> show(nextFrame));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
+    public void push(int[][] nextFrame) {
+        framesQueue.add(nextFrame);
     }
 }

@@ -5,9 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Universe implements Serializable {
     @Serial
@@ -21,8 +20,7 @@ public class Universe implements Serializable {
         DIMENSION_X = dimx;
         DIMENSION_Y = dimy;
         matrix = new int[DIMENSION_Y][DIMENSION_X];
-        display = new Display (this);
-
+        display = new Display(this);
 
 
     }
@@ -60,19 +58,16 @@ public class Universe implements Serializable {
     }
 
     public int[][] calculateNextGeneration() {
-        long start = System.currentTimeMillis();
         int[][] result = new int[matrix.length][matrix[0].length];
         for (int i = 0; i < matrix.length; i++) {
-                for (int j = 0; j < matrix[0].length; j++) {
-                    if (isAlive(i, j)) {
-                        result[i][j] = 1;
-                    } else {
-                        result[i][j] = 0;
-                    }
+            for (int j = 0; j < matrix[0].length; j++) {
+                if (isAlive(i, j)) {
+                    result[i][j] = 1;
+                } else {
+                    result[i][j] = 0;
                 }
+            }
         }
-        long end = System.currentTimeMillis();
-        System.out.println(end - start);
         return result;
     }
 
@@ -95,14 +90,15 @@ public class Universe implements Serializable {
     }
 
     public void start() {
+        display.showForever();
         while (true) {
-            display.show();
+            display.push(matrix);
             matrix = calculateNextGeneration();
         }
     }
 
     public void show() {
-        display.show();
+        display.show(matrix);
     }
 
 
