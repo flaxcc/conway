@@ -5,8 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 public class Universe implements Serializable {
     @Serial
@@ -90,10 +90,14 @@ public class Universe implements Serializable {
     }
 
     public void start() {
-        display.showForever();
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> display.show(matrix), ForkJoinPool.commonPool());
         while (true) {
-            display.push(matrix);
             matrix = calculateNextGeneration();
+            future.thenRun(() -> {
+                display.show(matrix);
+                System.out.println(Thread.currentThread().getName());
+            });
+            System.out.println(Thread.currentThread().getName());
         }
     }
 
