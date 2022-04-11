@@ -9,20 +9,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 public class Universe implements Serializable {
-    @Serial
-    private final long id = 111;
-    private final int DIMENSION_X;
-    private final int DIMENSION_Y;
     private int[][] matrix;
-    private Display display;
+    private final Display display;
 
     public Universe(int dimx, int dimy) {
-        DIMENSION_X = dimx;
-        DIMENSION_Y = dimy;
-        matrix = new int[DIMENSION_Y][DIMENSION_X];
+        matrix = new int[dimy][dimx];
         display = new Display(this);
-
-
     }
 
     public boolean isAlive(int i, int j) {
@@ -92,12 +84,13 @@ public class Universe implements Serializable {
     public void start() {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> display.show(matrix), ForkJoinPool.commonPool());
         while (true) {
+            try {
+                Thread.sleep(10_000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             matrix = calculateNextGeneration();
-            future.thenRun(() -> {
-                display.show(matrix);
-                System.out.println(Thread.currentThread().getName());
-            });
-            System.out.println(Thread.currentThread().getName());
+            future.thenRun(() -> display.show(matrix));
         }
     }
 
