@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 public class MainMenu {
     private JButton startButton;
@@ -8,8 +9,10 @@ public class MainMenu {
     private JTextField rowField;
     private JTextField columnField;
     private JPanel rootPanel;
-    private JComboBox comboBox;
+    private JComboBox<String> comboBox;
     private JButton choiseButton;
+    private JPanel menuPanel;
+    private JPanel drawingPanel;
     private String chosenConfiguration;
     private Universe universe;
 
@@ -17,7 +20,7 @@ public class MainMenu {
         rowField.setText("100");
         columnField.setText("100");
         var file = new File("src/resources");
-        for (String item : file.list()) {
+        for (String item : Objects.requireNonNull(file.list())) {
             comboBox.addItem(item);
         }
         comboBox.addItem("случайное расселение");

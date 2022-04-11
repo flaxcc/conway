@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.io.Serial;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -38,15 +37,10 @@ public class Universe implements Serializable {
                 if (columnIndex >= matrix.length) {
                     columnIndex = matrix[0].length - columnIndex;
                 }
-
-
                 count += matrix[rowIndex][columnIndex];
-
             }
         }
         return matrix[i][j] == 1 ? count == 2 || count == 3 : count == 3;
-
-
     }
 
     public int[][] calculateNextGeneration() {
@@ -84,11 +78,6 @@ public class Universe implements Serializable {
     public void start() {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> display.show(matrix), ForkJoinPool.commonPool());
         while (true) {
-            try {
-                Thread.sleep(10_000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             matrix = calculateNextGeneration();
             future.thenRun(() -> display.show(matrix));
         }

@@ -1,6 +1,5 @@
 import utils.StdDraw;
 
-import java.awt.*;
 import java.io.Serializable;
 
 public class Display implements Serializable {
@@ -17,24 +16,19 @@ public class Display implements Serializable {
         StdDraw.setYscale(0, CANVAS_HEIGHT - 1);
         StdDraw.enableDoubleBuffering();
         StdDraw.setPenRadius(0.001 * xScale);
-        StdDraw.setPenColor(Color.BLACK);
-
+        StdDraw.setPenColor(StdDraw.BLACK);
     }
 
     public void show(int[][] matrix) {
-        long start = System.nanoTime();
         StdDraw.clear();
         for (int i = 1; i <= matrix.length; i++) {
             for (int j = 1; j <= matrix[0].length; j++) {
                 if (matrix[i - 1][j - 1] == 1) {
                     StdDraw.point(i * xScale, j * yScale);
                 }
-
             }
-
         }
-        long end = System.nanoTime();
-        System.out.println(Application.getHumanReadableTime(end - start));
+        StdDraw.show();
     }
 
 }
