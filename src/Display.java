@@ -11,7 +11,6 @@ public class Display implements Serializable {
 
     public Display(Universe universe) {
         this.universe = universe;
-        open();
     }
 
     public void show(int[][] matrix) {

@@ -59,6 +59,32 @@ public class Universe implements Serializable {
         return result;
     }
 
+    public int[][] getMatrix() {
+        return matrix;
+    }
+
+    public void start() {
+        isStopped = false;
+        display.open();
+        CompletableFuture<Void> future = CompletableFuture.runAsync(this::show, ForkJoinPool.commonPool());
+        while (!isStopped) {
+            matrix = calculateNextGeneration();
+            future.thenRun(this::show);
+        }
+    }
+
+    public void stop() {
+        isStopped = true;
+        display.close();
+    }
+
+    public void show() {
+        if (isStopped) {
+            display.open();
+        }
+        display.show(matrix);
+    }
+
     /**
      * Этот метод нужен для заполнения поля случайным расселением
      */
@@ -71,24 +97,6 @@ public class Universe implements Serializable {
             }
         }
 
-    }
-
-    public int[][] getMatrix() {
-        return matrix;
-    }
-
-    public void start() {
-        isStopped = false;
-        display.open();
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> display.show(matrix), ForkJoinPool.commonPool());
-        while (!isStopped) {
-            matrix = calculateNextGeneration();
-            future.thenRun(() -> display.show(matrix));
-        }
-    }
-
-    public void show() {
-        display.show(matrix);
     }
 
 
@@ -108,10 +116,5 @@ public class Universe implements Serializable {
             }
         });
 
-    }
-
-    public void stop() {
-        isStopped = true;
-        display.close();
     }
 }
