@@ -3,6 +3,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -10,6 +11,7 @@ import java.util.concurrent.ForkJoinPool;
 public class Universe implements Serializable {
     private int[][] matrix;
     private final Display display;
+    public transient boolean isStopped;
 
     public Universe(int dimx, int dimy) {
         matrix = new int[dimy][dimx];
@@ -76,8 +78,10 @@ public class Universe implements Serializable {
     }
 
     public void start() {
+        isStopped = false;
+        display.open();
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> display.show(matrix), ForkJoinPool.commonPool());
-        while (true) {
+        while (!isStopped) {
             matrix = calculateNextGeneration();
             future.thenRun(() -> display.show(matrix));
         }
@@ -88,13 +92,26 @@ public class Universe implements Serializable {
     }
 
 
-    public void readFromFile(String s) throws IOException {
-        List<String> lines = Files.readAllLines(Paths.get(s));
-        for (String line : lines) {
-            String[] split = line.split(",");
-            int i = Integer.parseInt(split[0].trim());
-            int j = Integer.parseInt(split[1].trim());
-            matrix[i][j] = 1;
+    public void readFromFile(String s) {
+        Optional<List<String>> lines = Optional.empty();
+        try {
+            lines = Optional.of(Files.readAllLines(Paths.get(s)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        lines.ifPresent(value -> {
+            for (String line : value) {
+                String[] split = line.split(",");
+                int i = Integer.parseInt(split[0].trim());
+                int j = Integer.parseInt(split[1].trim());
+                matrix[i][j] = 1;
+            }
+        });
+
+    }
+
+    public void stop() {
+        isStopped = true;
+        display.close();
     }
 }

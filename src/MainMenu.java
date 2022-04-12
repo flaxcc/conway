@@ -1,6 +1,11 @@
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.ColorUIResource;
+import java.awt.*;
 import java.io.File;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class MainMenu {
@@ -9,67 +14,110 @@ public class MainMenu {
     private JTextField rowField;
     private JTextField columnField;
     private JPanel rootPanel;
-    private JComboBox<String> comboBox;
-    private JButton choiseButton;
+    private JComboBox<String> choiceBox;
+    private JButton showButton;
     private JPanel menuPanel;
     private JPanel drawingPanel;
     private String chosenConfiguration;
     private Universe universe;
+    private int x;
+    private int y;
+    private Map<String, Runnable> actionsMap;
 
     public MainMenu() {
+        actionsMap = new HashMap<>();
+        setGridSize();
+        setChoiceComboBox();
+        setShowButton();
+        setStartButton();
+        setExitButton();
+    }
+
+    private void setGridSize() {
         rowField.setText("100");
         columnField.setText("100");
+        x = y = 100;
+        rowField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                var temp = rowField.getText();
+                x = temp.isBlank() ? 0 : Integer.parseInt(temp);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                insertUpdate(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                insertUpdate(e);
+            }
+        });
+        columnField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                var temp = columnField.getText();
+                y = temp.isBlank() ? 0 : Integer.parseInt(temp);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                insertUpdate(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                insertUpdate(e);
+            }
+        });
+    }
+
+    private void setChoiceComboBox() {
         var file = new File("src/resources");
-        for (String item : Objects.requireNonNull(file.list())) {
-            comboBox.addItem(item);
+        for (File item : Objects.requireNonNull(file.listFiles())) {
+            choiceBox.addItem(item.getName());
+            actionsMap.put(item.getName(), () -> universe.readFromFile(item.getAbsolutePath()));
         }
-        comboBox.addItem("случайное расселение");
-        startButton.addActionListener(e -> {
-            if (universe == null) {
-                var s1 = rowField.getText();
-                int x = Integer.parseInt(s1);
-                var s2 = columnField.getText();
-                int y = Integer.parseInt(s2);
-                universe = new Universe(y, x);
-                chosenConfiguration = (String) comboBox.getSelectedItem();
-                if (chosenConfiguration.equals("случайное расселение")) {
-                    universe.initializeRandom();
-                } else {
-                    try {
-                        String filename = "src/resources/" + chosenConfiguration;
-                        universe.readFromFile(filename);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-            new Thread(() -> universe.start()).start();
-        });
-        exitButton.addActionListener(e -> System.exit(0));
-        comboBox.addActionListener(e -> chosenConfiguration = (String) comboBox.getSelectedItem());
-        choiseButton.addActionListener(e -> {
-            if (chosenConfiguration == null) {
-                chosenConfiguration = (String) comboBox.getSelectedItem();
-            }
-            var s1 = rowField.getText();
-            int x = Integer.parseInt(s1);
-            var s2 = columnField.getText();
-            int y = Integer.parseInt(s2);
+        choiceBox.addItem("случайное расселение");
+        actionsMap.put("случайное расселение", () -> universe.initializeRandom());
+    }
+
+    private void setShowButton() {
+        showButton.addActionListener(e -> {
+            chosenConfiguration = (String) choiceBox.getSelectedItem();
             universe = new Universe(y, x);
-            if (chosenConfiguration.equals("случайное расселение")) {
-                universe.initializeRandom();
-            } else {
-                try {
-                    String filename = "src/resources/" + chosenConfiguration;
-                    universe.readFromFile(filename);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+            var action = actionsMap.get(chosenConfiguration);
+            action.run();
+            new Thread(() -> universe.show()).start();
+        });
+    }
+
+    private void setStartButton() {
+        startButton.addActionListener(e -> {
+            switch (startButton.getText()) {
+                case "Запустить" -> {
+                    if (universe == null) {
+                        chosenConfiguration = (String) choiceBox.getSelectedItem();
+                        universe = new Universe(y, x);
+                        var action = actionsMap.get(chosenConfiguration);
+                        action.run();
+                    }
+                    new Thread(() -> universe.start()).start();
+                    startButton.setText("Остановить");
+                    startButton.setBackground(Color.PINK);
+                }
+                case "Остановить" -> {
+                    universe.stop();
+                    startButton.setText("Запустить");
+                    startButton.setBackground(Color.GREEN);
                 }
             }
-            new Thread(() -> universe.show()).start();
-
         });
+    }
 
+    private void setExitButton() {
+        exitButton.addActionListener(e -> System.exit(0));
     }
 
     public JPanel getRootPanel() {
