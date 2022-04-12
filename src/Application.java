@@ -16,7 +16,7 @@ public class Application {
         TimeUnit unitToPrint = null;
         StringBuilder result = new StringBuilder();
         long rest = nanos;
-        for(TimeUnit t: TimeUnit.values()) {
+        for (TimeUnit t : TimeUnit.values()) {
             if (unitToPrint == null) {
                 unitToPrint = t;
                 continue;

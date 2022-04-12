@@ -32,11 +32,9 @@ public class MainMenu {
                 int y = Integer.parseInt(s2);
                 universe = new Universe(y, x);
                 chosenConfiguration = (String) comboBox.getSelectedItem();
-                if (chosenConfiguration.equals("случайное расселение"))
-                {
+                if (chosenConfiguration.equals("случайное расселение")) {
                     universe.initializeRandom();
-                }
-                else {
+                } else {
                     try {
                         String filename = "src/resources/" + chosenConfiguration;
                         universe.readFromFile(filename);
@@ -58,11 +56,9 @@ public class MainMenu {
             var s2 = columnField.getText();
             int y = Integer.parseInt(s2);
             universe = new Universe(y, x);
-            if (chosenConfiguration.equals("случайное расселение"))
-            {
+            if (chosenConfiguration.equals("случайное расселение")) {
                 universe.initializeRandom();
-            }
-            else {
+            } else {
                 try {
                     String filename = "src/resources/" + chosenConfiguration;
                     universe.readFromFile(filename);
