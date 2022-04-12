@@ -1,28 +1,21 @@
 import java.io.IOException;
-import java.io.Serial;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 public class Universe implements Serializable {
-    @Serial
-    private final long id = 111;
-    private final int DIMENSION_X;
-    private final int DIMENSION_Y;
     private int[][] matrix;
-    private Display display;
+    private final Display display;
+    public transient boolean isStopped = true;
 
     public Universe(int dimx, int dimy) {
-        DIMENSION_X = dimx;
-        DIMENSION_Y = dimy;
-        matrix = new int[DIMENSION_Y][DIMENSION_X];
+        matrix = new int[dimy][dimx];
         display = new Display(this);
-
-
     }
 
     public boolean isAlive(int i, int j) {
@@ -46,15 +39,10 @@ public class Universe implements Serializable {
                 if (columnIndex >= matrix.length) {
                     columnIndex = matrix[0].length - columnIndex;
                 }
-
-
                 count += matrix[rowIndex][columnIndex];
-
             }
         }
         return matrix[i][j] == 1 ? count == 2 || count == 3 : count == 3;
-
-
     }
 
     public int[][] calculateNextGeneration() {
@@ -71,6 +59,32 @@ public class Universe implements Serializable {
         return result;
     }
 
+    public int[][] getMatrix() {
+        return matrix;
+    }
+
+    public void start() {
+        isStopped = false;
+        display.open();
+        CompletableFuture<Void> future = CompletableFuture.runAsync(this::show, ForkJoinPool.commonPool());
+        while (!isStopped) {
+            matrix = calculateNextGeneration();
+            future.thenRun(this::show);
+        }
+    }
+
+    public void stop() {
+        isStopped = true;
+        display.close();
+    }
+
+    public void show() {
+        if (isStopped) {
+            display.open();
+        }
+        display.show(matrix);
+    }
+
     /**
      * Этот метод нужен для заполнения поля случайным расселением
      */
@@ -85,30 +99,22 @@ public class Universe implements Serializable {
 
     }
 
-    public int[][] getMatrix() {
-        return matrix;
-    }
 
-    public void start() {
-        display.showForever();
-        while (true) {
-            display.push(matrix);
-            matrix = calculateNextGeneration();
+    public void readFromFile(String s) {
+        Optional<List<String>> lines = Optional.empty();
+        try {
+            lines = Optional.of(Files.readAllLines(Paths.get(s)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
+        lines.ifPresent(value -> {
+            for (String line : value) {
+                String[] split = line.split(",");
+                int i = Integer.parseInt(split[0].trim());
+                int j = Integer.parseInt(split[1].trim());
+                matrix[i][j] = 1;
+            }
+        });
 
-    public void show() {
-        display.show(matrix);
-    }
-
-
-    public void readFromFile(String s) throws IOException {
-        List<String> lines = Files.readAllLines(Paths.get(s));
-        for (String line : lines) {
-            String[] split = line.split(",");
-            int i = Integer.parseInt(split[0].trim());
-            int j = Integer.parseInt(split[1].trim());
-            matrix[i][j] = 1;
-        }
     }
 }
