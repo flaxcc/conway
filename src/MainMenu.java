@@ -23,6 +23,7 @@ public class MainMenu {
     private int x;
     private int y;
     private Map<String, Runnable> actionsMap;
+    private boolean isLaunched;
 
     public MainMenu() {
         actionsMap = new HashMap<>();
@@ -90,28 +91,28 @@ public class MainMenu {
             var action = actionsMap.get(chosenConfiguration);
             action.run();
             new Thread(() -> universe.show()).start();
+            universe.isStopped = true;
         });
     }
 
     private void setStartButton() {
         startButton.addActionListener(e -> {
-            switch (startButton.getText()) {
-                case "Запустить" -> {
-                    if (universe == null) {
-                        chosenConfiguration = (String) choiceBox.getSelectedItem();
-                        universe = new Universe(y, x);
-                        var action = actionsMap.get(chosenConfiguration);
-                        action.run();
-                    }
-                    new Thread(() -> universe.start()).start();
-                    startButton.setText("Остановить");
-                    startButton.setBackground(Color.PINK);
+            if (!isLaunched) {
+                if (universe == null) {
+                    chosenConfiguration = (String) choiceBox.getSelectedItem();
+                    universe = new Universe(y, x);
+                    var action = actionsMap.get(chosenConfiguration);
+                    action.run();
                 }
-                case "Остановить" -> {
-                    universe.stop();
-                    startButton.setText("Запустить");
-                    startButton.setBackground(Color.GREEN);
-                }
+                new Thread(() -> universe.start()).start();
+                isLaunched = true;
+                startButton.setText("Остановить");
+                startButton.setBackground(Color.PINK);
+            } else {
+                universe.stop();
+                isLaunched = false;
+                startButton.setText("Запустить");
+                startButton.setBackground(Color.GREEN);
             }
         });
     }

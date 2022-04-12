@@ -11,7 +11,7 @@ import java.util.concurrent.ForkJoinPool;
 public class Universe implements Serializable {
     private int[][] matrix;
     private final Display display;
-    public transient boolean isStopped;
+    public transient boolean isStopped = true;
 
     public Universe(int dimx, int dimy) {
         matrix = new int[dimy][dimx];
