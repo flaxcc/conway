@@ -1,8 +1,9 @@
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.plaf.ColorUIResource;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class MainMenu {
     private JButton showButton;
     private JPanel menuPanel;
     private JPanel drawingPanel;
+    private JComboBox<String> colorBox;
     private String chosenConfiguration;
     private Universe universe;
     private int x;
@@ -32,6 +34,25 @@ public class MainMenu {
         setShowButton();
         setStartButton();
         setExitButton();
+        setColorComboBox();
+    }
+
+    private void setColorComboBox() {
+        colorBox.addItem("black");
+        colorBox.addItem("red");
+        colorBox.addItem("green");
+        colorBox.addItem("blue");
+        colorBox.addItemListener(e -> {
+            String name = (String) colorBox.getSelectedItem();
+            Display.color = switch (name) {
+                case "black" -> Color.BLACK;
+                case "red" -> Color.RED;
+                case "green" -> Color.GREEN;
+                case "blue" -> Color.BLUE;
+                default -> Color.BLACK;
+            };
+
+        });
     }
 
     private void setGridSize() {

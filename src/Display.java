@@ -1,5 +1,6 @@
 import utils.StdDraw;
 
+import java.awt.*;
 import java.io.Serializable;
 
 public class Display implements Serializable {
@@ -8,6 +9,7 @@ public class Display implements Serializable {
     private static final int CANVAS_WIDTH = 966;
     private static final int CANVAS_HEIGHT = 650;
     private final Universe universe;
+    public static Color color;
 
     public Display(Universe universe) {
         this.universe = universe;
@@ -37,6 +39,6 @@ public class Display implements Serializable {
         StdDraw.setYscale(0, CANVAS_HEIGHT - 1);
         StdDraw.enableDoubleBuffering();
         StdDraw.setPenRadius(0.001 * xScale);
-        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenColor(color);
     }
 }
