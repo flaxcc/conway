@@ -76,10 +76,13 @@ public class MainMenu {
     }
 
     private void setChoiceComboBox() {
-        var file = new File("src/resources");
-        for (File item : Objects.requireNonNull(file.listFiles())) {
-            choiceBox.addItem(item.getName());
-            actionsMap.put(item.getName(), () -> universe.readFromFile(item.getAbsolutePath()));
+        var folder = new File("resources");
+        if (!folder.exists()) {
+            folder = askForData(folder);
+        }
+        for (File file : Objects.requireNonNull(folder.listFiles())) {
+            choiceBox.addItem(file.getName());
+            actionsMap.put(file.getName(), () -> universe.readFromFile(file.getAbsolutePath()));
         }
         choiceBox.addItem("случайное расселение");
         actionsMap.put("случайное расселение", () -> universe.initializeRandom());
@@ -145,5 +148,21 @@ public class MainMenu {
 
     public JPanel getRootPanel() {
         return rootPanel;
+    }
+
+    private File askForData(File folder) {
+        JOptionPane.showMessageDialog(rootPanel,
+                "Где папка " + folder.getAbsolutePath() + " ?",
+                "ERROR",
+                JOptionPane.ERROR_MESSAGE);
+        File currentDir = new File(System.getProperty("user.dir"));
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(currentDir);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = fileChooser.showOpenDialog(rootPanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            folder = fileChooser.getSelectedFile();
+        }
+        return folder;
     }
 }
