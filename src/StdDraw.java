@@ -1,6 +1,3 @@
-package utils;
-
-
 /******************************************************************************
  *  Compilation:  javac StdDraw.java
  *  Execution:    java StdDraw
@@ -439,6 +436,7 @@ import java.util.TreeSet;
  * <em>Computer Science: An Interdisciplinary Approach</em>
  * by Robert Sedgewick and Kevin Wayne.
  * <p>
+ *
  * @author Robert Sedgewick
  * @author Kevin Wayne
  */

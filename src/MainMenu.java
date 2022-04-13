@@ -2,8 +2,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,7 @@ public class MainMenu {
     private Universe universe;
     private int x;
     private int y;
-    private Map<String, Runnable> actionsMap;
+    private final Map<String, Runnable> actionsMap;
     private boolean isLaunched;
 
     public MainMenu() {
@@ -35,24 +33,6 @@ public class MainMenu {
         setStartButton();
         setExitButton();
         setColorComboBox();
-    }
-
-    private void setColorComboBox() {
-        colorBox.addItem("black");
-        colorBox.addItem("red");
-        colorBox.addItem("green");
-        colorBox.addItem("blue");
-        colorBox.addItemListener(e -> {
-            String name = (String) colorBox.getSelectedItem();
-            Display.color = switch (name) {
-                case "black" -> Color.BLACK;
-                case "red" -> Color.RED;
-                case "green" -> Color.GREEN;
-                case "blue" -> Color.BLUE;
-                default -> Color.BLACK;
-            };
-
-        });
     }
 
     private void setGridSize() {
@@ -116,6 +96,18 @@ public class MainMenu {
         });
     }
 
+    private void setColorComboBox() {
+        colorBox.addItem("black");
+        colorBox.addItem("red");
+        colorBox.addItem("green");
+        colorBox.addItem("blue");
+        colorBox.addItemListener(e -> {
+            String name = (String) colorBox.getSelectedItem();
+            Color color = getColorByName(Objects.requireNonNull(name));
+            Display.setColor(color);
+        });
+    }
+
     private void setStartButton() {
         startButton.addActionListener(e -> {
             if (!isLaunched) {
@@ -136,6 +128,15 @@ public class MainMenu {
                 startButton.setBackground(Color.GREEN);
             }
         });
+    }
+
+    public static Color getColorByName(String name) {
+        try {
+            return (Color) Color.class.getField(name.toUpperCase()).get(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Color.BLACK;
+        }
     }
 
     private void setExitButton() {
