@@ -2,8 +2,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,7 @@ public class MainMenu {
     private Universe universe;
     private int x;
     private int y;
-    private Map<String, Runnable> actionsMap;
+    private final Map<String, Runnable> actionsMap;
     private boolean isLaunched;
 
     public MainMenu() {
@@ -35,24 +33,6 @@ public class MainMenu {
         setStartButton();
         setExitButton();
         setColorComboBox();
-    }
-
-    private void setColorComboBox() {
-        colorBox.addItem("black");
-        colorBox.addItem("red");
-        colorBox.addItem("green");
-        colorBox.addItem("blue");
-        colorBox.addItemListener(e -> {
-            String name = (String) colorBox.getSelectedItem();
-            Display.color = switch (name) {
-                case "black" -> Color.BLACK;
-                case "red" -> Color.RED;
-                case "green" -> Color.GREEN;
-                case "blue" -> Color.BLUE;
-                default -> Color.BLACK;
-            };
-
-        });
     }
 
     private void setGridSize() {
@@ -96,10 +76,13 @@ public class MainMenu {
     }
 
     private void setChoiceComboBox() {
-        var file = new File("src/resources");
-        for (File item : Objects.requireNonNull(file.listFiles())) {
-            choiceBox.addItem(item.getName());
-            actionsMap.put(item.getName(), () -> universe.readFromFile(item.getAbsolutePath()));
+        var folder = new File("resources");
+        if (!folder.exists()) {
+            folder = askForData(folder);
+        }
+        for (File file : Objects.requireNonNull(folder.listFiles())) {
+            choiceBox.addItem(file.getName());
+            actionsMap.put(file.getName(), () -> universe.readFromFile(file.getAbsolutePath()));
         }
         choiceBox.addItem("случайное расселение");
         actionsMap.put("случайное расселение", () -> universe.initializeRandom());
@@ -113,6 +96,18 @@ public class MainMenu {
             action.run();
             new Thread(() -> universe.show()).start();
             universe.isStopped = true;
+        });
+    }
+
+    private void setColorComboBox() {
+        colorBox.addItem("black");
+        colorBox.addItem("red");
+        colorBox.addItem("green");
+        colorBox.addItem("blue");
+        colorBox.addItemListener(e -> {
+            String name = (String) colorBox.getSelectedItem();
+            Color color = getColorByName(Objects.requireNonNull(name));
+            Display.setColor(color);
         });
     }
 
@@ -138,11 +133,36 @@ public class MainMenu {
         });
     }
 
+    public static Color getColorByName(String name) {
+        try {
+            return (Color) Color.class.getField(name.toUpperCase()).get(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Color.BLACK;
+        }
+    }
+
     private void setExitButton() {
         exitButton.addActionListener(e -> System.exit(0));
     }
 
     public JPanel getRootPanel() {
         return rootPanel;
+    }
+
+    private File askForData(File folder) {
+        JOptionPane.showMessageDialog(rootPanel,
+                "Где папка " + folder.getAbsolutePath() + " ?",
+                "ERROR",
+                JOptionPane.ERROR_MESSAGE);
+        File currentDir = new File(System.getProperty("user.dir"));
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(currentDir);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = fileChooser.showOpenDialog(rootPanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            folder = fileChooser.getSelectedFile();
+        }
+        return folder;
     }
 }
